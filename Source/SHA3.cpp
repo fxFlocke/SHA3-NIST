@@ -248,17 +248,29 @@ string SHA3::text_to_binary_string(string words)
 }
 
 //Prepare the message for hashing with padding.
-string SHA3::fillBits(string data)
+string SHA3::fillPadding(string data)
 {
-        int size = data.size();
+    int size = data.size();
     data = data + "011";
-    size = 26109 - size;
+    size = 26108 - size;
     for(int i = 1; i <= size; i++)
     {
         data = data + "0";
     }
     data = data + "1";
     return data;
+}
+
+string SHA3::fillMessage(string data)
+{
+    string filledMessage = data;
+    int size = data.size();
+    size = 1600 - size;
+    for(int i = 1; i <= size; i++)
+    {
+        filledMessage += "0";
+    }
+    return filledMessage;
 }
 
 //Perform a xor operation on a bit-string by the bitLength number
@@ -582,7 +594,7 @@ string SHA3::hash(string message)
 {
     string input = message;
     string injectionBlocks[23];
-    string rPart, cPart, inputCopy, secondCopy, blockPart, tempWord;
+    string rPart, cPart, initialState, secondCopy, blockPart, tempWord;
     int fromSubStr, toSubStr;
     input = text_to_binary_string(input);
     if(input.size() > 1600)
@@ -591,12 +603,12 @@ string SHA3::hash(string message)
     }
     else
     {
+        initialState = fillMessage(input);
         //Preprocessing -> Padding
         if(input.size() < 1600)
         {
-            input = fillBits(input);
+            input = fillPadding(input);
         }
-        inputCopy = input;
         //Preprocessing -> Divide into 24 1088 Blocks
         for(int i = 0; i <= 23; i++)
         {
@@ -606,15 +618,15 @@ string SHA3::hash(string message)
         //Perform the 24 Rounds
         for(int i = 0; i <= 23; i++)
         {
-            rPart = inputCopy.substr(0, 1088);
-            cPart = inputCopy.substr(1088, 512);
+            rPart = initialState.substr(0, 1088);
+            cPart = initialState.substr(1088, 512);
             blockPart = injectionBlocks[0];
             rPart = xor_operation(rPart, blockPart, rPart.size());
             tempWord = rPart + cPart;
-            inputCopy = f_function(tempWord, 0);
+            initialState = f_function(tempWord, 0);
         }
         //Get the 256 Bit result
-        rPart = inputCopy.substr(832, 256);
+        rPart = initialState.substr(832, 256);
         string keccHash = "";
         //Transform string to Hex-format
         for(int i = 0; i <= 64; i++)

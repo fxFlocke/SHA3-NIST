@@ -17,7 +17,8 @@ class SHA3
         string rotate_left(string word, int rotNum);
         string rotate_right(string word, int rotNum);
         string text_to_binary_string(string words);
-        string fillBits(string data);
+        string fillPadding(string data);
+        string fillMessage(string data);
         string xor_operation(string firstBits, string secondBits, int bitLength);
         string theta_block(string bits);
         string rho_and_pi_block(string bits);
